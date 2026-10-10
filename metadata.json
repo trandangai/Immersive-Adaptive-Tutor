@@ -1,0 +1,6 @@
+{
+  "name": "Immersive Adaptive Tutor",
+  "description": "An AI-powered adaptive Socratic learning companion that transforms study materials into two-way conversational voice sessions with real-time mastery tracking, automated flashcards, and Google Drive integration.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Immersive Adaptive Tutor</title>
+    <meta name="description" content="An AI-powered adaptive Socratic learning companion that transforms study materials into two-way conversational voice sessions with real-time mastery tracking, automated flashcards, and Google Drive integration." />
+    <meta property="og:title" content="Immersive Adaptive Tutor" />
+    <meta property="og:description" content="An AI-powered adaptive Socratic learning companion that transforms study materials into two-way conversational voice sessions with real-time mastery tracking, automated flashcards, and Google Drive integration." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (function() {
+        var theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

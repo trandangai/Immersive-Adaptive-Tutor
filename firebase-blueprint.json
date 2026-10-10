@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with learning statistics and preferences",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "totalSessions": { "type": "number" },
+        "topicsMasteredCount": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "email"]
+    },
+    "TutorSession": {
+      "title": "TutorSession",
+      "description": "An adaptive Socratic tutoring session record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "topicTitle": { "type": "string", "maxLength": 200 },
+        "subjectArea": { "type": "string", "maxLength": 100 },
+        "masteryLevel": { "type": "string", "enum": ["beginner", "intermediate", "advanced"] },
+        "comprehensionScore": { "type": "number" },
+        "pacingStatus": { "type": "string", "enum": ["optimal", "needs_reinforcement"] },
+        "summaryNotes": { "type": "string", "maxLength": 10000 },
+        "topicsMastered": { "type": "array" },
+        "topicsNeedingReview": { "type": "array" },
+        "status": { "type": "string", "enum": ["active", "completed"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "topicTitle", "masteryLevel", "comprehensionScore", "status"]
+    },
+    "Flashcard": {
+      "title": "Flashcard",
+      "description": "Auto-generated flashcard derived during Socratic dialogue",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "concept": { "type": "string", "maxLength": 150 },
+        "front": { "type": "string", "maxLength": 500 },
+        "back": { "type": "string", "maxLength": 1000 },
+        "difficulty": { "type": "string", "enum": ["beginner", "intermediate", "advanced"] },
+        "mastered": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "sessionId", "concept", "front", "back", "mastered"]
+    },
+    "StudyDocument": {
+      "title": "StudyDocument",
+      "description": "Imported Google Drive or pasted lecture notes document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string", "maxLength": 250 },
+        "driveFileId": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "extractedSummary": { "type": "string", "maxLength": 5000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Individual user learning profile and preferences"
+    },
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": "TutorSession",
+      "description": "Socratic adaptive tutoring sessions for a specific user"
+    },
+    "/users/{userId}/flashcards/{flashcardId}": {
+      "schema": "Flashcard",
+      "description": "Spaced repetition flashcards generated from tutoring sessions"
+    },
+    "/users/{userId}/documents/{documentId}": {
+      "schema": "StudyDocument",
+      "description": "Imported study notes or Drive files metadata"
+    }
+  }
+}

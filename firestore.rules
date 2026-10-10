@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // User profile
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.userId == userId
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 120;
+      allow update: if isOwner(userId)
+        && request.resource.data.userId == userId
+        && request.resource.data.email == resource.data.email;
+      allow delete: if isOwner(userId);
+
+      // Sessions subcollection
+      match /sessions/{sessionId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && isValidId(sessionId)
+          && request.resource.data.userId == userId
+          && request.resource.data.topicTitle is string
+          && request.resource.data.topicTitle.size() <= 300
+          && request.resource.data.masteryLevel in ['beginner', 'intermediate', 'advanced']
+          && request.resource.data.comprehensionScore is number
+          && request.resource.data.status in ['active', 'completed'];
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == userId
+          && request.resource.data.topicTitle == resource.data.topicTitle;
+        allow delete: if isOwner(userId);
+      }
+
+      // Flashcards subcollection
+      match /flashcards/{flashcardId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && isValidId(flashcardId)
+          && request.resource.data.userId == userId
+          && request.resource.data.concept is string
+          && request.resource.data.concept.size() <= 200
+          && request.resource.data.front is string
+          && request.resource.data.front.size() <= 600
+          && request.resource.data.back is string
+          && request.resource.data.back.size() <= 1200;
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == userId;
+        allow delete: if isOwner(userId);
+      }
+
+      // Study Documents subcollection
+      match /documents/{documentId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && isValidId(documentId)
+          && request.resource.data.userId == userId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 300;
+        allow update: if isOwner(userId)
+          && request.resource.data.userId == userId;
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
