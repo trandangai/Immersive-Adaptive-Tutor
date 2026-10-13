@@ -474,8 +474,8 @@ Produce a well-structured study guide with:
   }
 });
 
-// Setup Vite or static serving (Always bind to port 3000 for AI Studio environment)
-const PORT = 3000;
+// Setup Vite or static serving (Default to 3000 for AI Studio, or process.env.PORT in Cloud Run)
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 async function startServer() {
   try {
