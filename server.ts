@@ -474,27 +474,32 @@ Produce a well-structured study guide with:
   }
 });
 
-// Setup Vite or static serving
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+// Setup Vite or static serving (Always bind to port 3000 for AI Studio environment)
+const PORT = 3000;
 
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    app.use(express.static(path.resolve(__dirname, 'dist')));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
-    });
-  }
+  try {
+    if (process.env.NODE_ENV !== 'production') {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } else {
+      app.use(express.static(path.resolve(__dirname, 'dist')));
+      app.get('*', (_req, res) => {
+        res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+      });
+    }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Immersive Adaptive Tutor server listening on port ${PORT}`);
-  });
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Immersive Adaptive Tutor server listening on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
 }
 
 startServer();
