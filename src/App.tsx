@@ -37,6 +37,9 @@ import { FlashcardsDeck } from './components/FlashcardsDeck.tsx';
 import { HistoryDrawer } from './components/HistoryDrawer.tsx';
 import { DriveModal } from './components/DriveModal.tsx';
 import { TestRunnerModal } from './components/TestRunnerModal.tsx';
+import { PrivacyPolicy } from './components/PrivacyPolicy.tsx';
+import { TermsOfService } from './components/TermsOfService.tsx';
+import { Footer } from './components/Footer.tsx';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
@@ -70,6 +73,38 @@ export default function App() {
     return true;
   });
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [legalPage, setLegalPage] = useState<'none' | 'privacy' | 'terms'>('none');
+
+  // Handle URL routes for Privacy Policy and Terms of Service (Google OAuth requirement)
+  useEffect(() => {
+    const checkRoute = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/privacy' || path === '/privacy-policy') {
+        setLegalPage('privacy');
+      } else if (path === '/terms' || path === '/terms-of-service') {
+        setLegalPage('terms');
+      } else {
+        setLegalPage('none');
+      }
+    };
+
+    checkRoute();
+    window.addEventListener('popstate', checkRoute);
+    return () => window.removeEventListener('popstate', checkRoute);
+  }, []);
+
+  const handleNavigateLegal = (view: 'privacy' | 'terms' | 'app') => {
+    if (view === 'privacy') {
+      window.history.pushState({}, '', '/privacy');
+      setLegalPage('privacy');
+    } else if (view === 'terms') {
+      window.history.pushState({}, '', '/terms');
+      setLegalPage('terms');
+    } else {
+      window.history.pushState({}, '', '/');
+      setLegalPage('none');
+    }
+  };
 
   // Sync dark class on documentElement and persist
   useEffect(() => {
@@ -322,76 +357,91 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col justify-start">
-        {/* TAB 1: Socratic Tutor Workflow */}
-        {activeTab === 'tutor' && (
+        {legalPage === 'privacy' && (
+          <PrivacyPolicy onBack={() => handleNavigateLegal('app')} />
+        )}
+
+        {legalPage === 'terms' && (
+          <TermsOfService onBack={() => handleNavigateLegal('app')} />
+        )}
+
+        {legalPage === 'none' && (
           <>
-            {viewState === 'ingest' && (
-              <MaterialIngestion
-                onGenerateRoadmap={handleGenerateRoadmap}
-                onOpenDriveModal={() => setIsDriveModalOpen(true)}
-                isLoading={isLoadingRoadmap}
-              />
+            {/* TAB 1: Socratic Tutor Workflow */}
+            {activeTab === 'tutor' && (
+              <>
+                {viewState === 'ingest' && (
+                  <MaterialIngestion
+                    onGenerateRoadmap={handleGenerateRoadmap}
+                    onOpenDriveModal={() => setIsDriveModalOpen(true)}
+                    isLoading={isLoadingRoadmap}
+                  />
+                )}
+
+                {viewState === 'roadmap' && roadmap && (
+                  <RoadmapView
+                    roadmap={roadmap}
+                    onStartSession={() => setViewState('session')}
+                    onReset={() => setViewState('ingest')}
+                  />
+                )}
+
+                {viewState === 'session' && roadmap && (
+                  <SocraticVoiceSession
+                    roadmap={roadmap}
+                    onFinishSession={handleFinishVoiceSession}
+                    onBackToRoadmap={() => setViewState('roadmap')}
+                  />
+                )}
+
+                {viewState === 'summary' && completedSession && (
+                  <SummaryDashboard
+                    session={completedSession}
+                    flashcards={flashcards}
+                    onStartNewSession={() => {
+                      setRoadmap(null);
+                      setViewState('ingest');
+                    }}
+                    onSaveToCloud={() => saveSessionToCloud()}
+                    isSaving={isSavingSession}
+                  />
+                )}
+              </>
             )}
 
-            {viewState === 'roadmap' && roadmap && (
-              <RoadmapView
-                roadmap={roadmap}
-                onStartSession={() => setViewState('session')}
-                onReset={() => setViewState('ingest')}
-              />
+            {/* TAB 2: Flashcards Deck */}
+            {activeTab === 'flashcards' && (
+              <div className="max-w-4xl mx-auto w-full">
+                <FlashcardsDeck
+                  flashcards={flashcards}
+                  onToggleMastery={handleToggleCardMastery}
+                />
+              </div>
             )}
 
-            {viewState === 'session' && roadmap && (
-              <SocraticVoiceSession
-                roadmap={roadmap}
-                onFinishSession={handleFinishVoiceSession}
-                onBackToRoadmap={() => setViewState('roadmap')}
-              />
-            )}
-
-            {viewState === 'summary' && completedSession && (
-              <SummaryDashboard
-                session={completedSession}
-                flashcards={flashcards}
-                onStartNewSession={() => {
-                  setRoadmap(null);
-                  setViewState('ingest');
-                }}
-                onSaveToCloud={() => saveSessionToCloud()}
-                isSaving={isSavingSession}
-              />
+            {/* TAB 3: History Drawer */}
+            {activeTab === 'history' && (
+              <div className="w-full">
+                <HistoryDrawer
+                  sessions={pastSessions}
+                  onSelectSession={session => {
+                    setCompletedSession(session);
+                    setViewState('summary');
+                    setActiveTab('tutor');
+                  }}
+                  onStartNew={() => {
+                    setViewState('ingest');
+                    setActiveTab('tutor');
+                  }}
+                />
+              </div>
             )}
           </>
         )}
-
-        {/* TAB 2: Flashcards Deck */}
-        {activeTab === 'flashcards' && (
-          <div className="max-w-4xl mx-auto w-full">
-            <FlashcardsDeck
-              flashcards={flashcards}
-              onToggleMastery={handleToggleCardMastery}
-            />
-          </div>
-        )}
-
-        {/* TAB 3: History Drawer */}
-        {activeTab === 'history' && (
-          <div className="w-full">
-            <HistoryDrawer
-              sessions={pastSessions}
-              onSelectSession={session => {
-                setCompletedSession(session);
-                setViewState('summary');
-                setActiveTab('tutor');
-              }}
-              onStartNew={() => {
-                setViewState('ingest');
-                setActiveTab('tutor');
-              }}
-            />
-          </div>
-        )}
       </main>
+
+      {/* Footer with Privacy Policy and Terms of Service links */}
+      <Footer onNavigate={handleNavigateLegal} />
 
       {/* Google Drive Browser Modal */}
       <DriveModal

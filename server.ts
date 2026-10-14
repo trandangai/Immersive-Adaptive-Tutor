@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -474,8 +475,35 @@ Produce a well-structured study guide with:
   }
 });
 
-// Setup Vite or static serving (Default to 3000 for AI Studio, or process.env.PORT in Cloud Run)
-const PORT = parseInt(process.env.PORT || '3000', 10);
+// Public endpoints for Google OAuth Verification & Crawler / Browser access
+app.get(['/privacy', '/privacy-policy'], (_req, res) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const privacyPath = isProd
+    ? path.resolve(__dirname, 'dist', 'privacy.html')
+    : path.resolve(__dirname, 'public', 'privacy.html');
+  if (fs.existsSync(privacyPath)) {
+    return res.sendFile(privacyPath);
+  }
+  const indexPath = path.resolve(__dirname, isProd ? 'dist/index.html' : 'index.html');
+  res.sendFile(indexPath);
+});
+
+app.get(['/terms', '/terms-of-service'], (_req, res) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  const termsPath = isProd
+    ? path.resolve(__dirname, 'dist', 'terms.html')
+    : path.resolve(__dirname, 'public', 'terms.html');
+  if (fs.existsSync(termsPath)) {
+    return res.sendFile(termsPath);
+  }
+  const indexPath = path.resolve(__dirname, isProd ? 'dist/index.html' : 'index.html');
+  res.sendFile(indexPath);
+});
+
+// Port 3000 is strictly required by AI Studio dev environment; Cloud Run sets PORT in production
+const PORT = process.env.NODE_ENV === 'production'
+  ? parseInt(process.env.PORT || '8080', 10)
+  : 3000;
 
 async function startServer() {
   try {
