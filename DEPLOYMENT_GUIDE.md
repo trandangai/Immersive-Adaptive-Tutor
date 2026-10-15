@@ -30,10 +30,10 @@ Your application is currently deployed and hosted live on Google Cloud Run withi
 
 ---
 
-## 2. Deploy to Google Cloud Run (Recommended Method)
+## 2. Deploy to Google Cloud Run (`asia-southeast1`)
 
 ### Step 1: Run the updated deployment script
-From your local project folder:
+From your terminal:
 ```bash
 chmod +x deploy-cloud-run.sh
 ./deploy-cloud-run.sh
@@ -44,7 +44,7 @@ chmod +x deploy-cloud-run.sh
 gcloud run deploy immersive-adaptive-tutor \
   --source . \
   --project gen-lang-client-0143328501 \
-  --region asia-northeast1 \
+  --region asia-southeast1 \
   --platform managed \
   --allow-unauthenticated \
   --port 8080 \
@@ -53,7 +53,27 @@ gcloud run deploy immersive-adaptive-tutor \
   --set-env-vars="NODE_ENV=production,GEMINI_API_KEY=YOUR_GEMINI_API_KEY"
 ```
 
-> **Note on Region**: If `asia-northeast1` encounters quota or regional restrictions, change `--region` to `us-central1` or `asia-southeast1`.
+---
+
+## 2.1 What if a deployment in `asia-southeast1` is "still deploying" or stuck?
+
+If your previous deployment in `asia-southeast1` is still spinning in the Google Cloud Console or terminal:
+
+1. **Why it was stuck**:
+   - In Cloud Run, when a container crashes on startup (which happened with the previous `node server.ts` TypeScript issue), Cloud Run doesn't fail immediately — it keeps retrying container instances for up to 10–15 minutes trying to reach port 8080 before finally reporting failure.
+2. **How to check ongoing Cloud Builds**:
+   ```bash
+   gcloud builds list --ongoing --project gen-lang-client-0143328501
+   ```
+3. **How to cancel a stuck build (optional)**:
+   ```bash
+   gcloud builds cancel <BUILD_ID> --project gen-lang-client-0143328501
+   ```
+4. **How to deploy the fix immediately**:
+   You do not need to wait for the old stuck deployment to finish. Running the new deploy command with the updated `Dockerfile` will supersede the old revision with the freshly compiled JavaScript server:
+   ```bash
+   ./deploy-cloud-run.sh
+   ```
 
 ---
 
@@ -77,7 +97,7 @@ docker push "${IMAGE_TAG}"
 gcloud run deploy immersive-adaptive-tutor \
   --image "${IMAGE_TAG}" \
   --project "${PROJECT_ID}" \
-  --region asia-northeast1 \
+  --region asia-southeast1 \
   --platform managed \
   --allow-unauthenticated \
   --port 8080 \

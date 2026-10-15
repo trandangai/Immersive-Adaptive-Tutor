@@ -9,7 +9,7 @@ set -euo pipefail
 # Configuration Defaults (modify or pass as environment variables)
 PROJECT_ID="${GCP_PROJECT_ID:-gen-lang-client-0143328501}"
 SERVICE_NAME="${SERVICE_NAME:-immersive-adaptive-tutor}"
-REGION="${GCP_REGION:-asia-northeast1}"
+REGION="${GCP_REGION:-asia-southeast1}"
 
 echo "=========================================================="
 echo "🚀 Deploying Immersive Adaptive Tutor to Google Cloud Run"
