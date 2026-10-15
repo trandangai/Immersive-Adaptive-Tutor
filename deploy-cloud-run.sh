@@ -26,12 +26,28 @@ if ! command -v gcloud &> /dev/null; then
 fi
 
 # Ensure user is authenticated
-echo "🔍 Verifying active Google Cloud account..."
+echo "🔍 Verifying active Google Cloud account & project..."
 gcloud config set project "${PROJECT_ID}"
 
 # Enable necessary Google Cloud APIs if not already enabled
 echo "⚙️  Enabling required Google Cloud APIs (run, cloudbuild, artifactregistry)..."
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com || {
+  echo "⚠️ Note: If API enabling failed, make sure billing is enabled for ${PROJECT_ID}."
+}
+
+# Resolve Project Number to configure Cloud Build permissions automatically
+PROJECT_NUMBER=$(gcloud projects describe "${PROJECT_ID}" --format='value(projectNumber)' 2>/dev/null || echo "")
+if [ -n "${PROJECT_NUMBER}" ]; then
+  echo "🔑 Ensuring Cloud Build service account has Cloud Run deployment permissions..."
+  # Grant Cloud Run Admin & Service Account User to Cloud Build service accounts
+  gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+    --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+    --role="roles/run.admin" --condition=None --quiet 2>/dev/null || true
+
+  gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+    --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+    --role="roles/run.admin" --condition=None --quiet 2>/dev/null || true
+fi
 
 # Check for GEMINI_API_KEY
 if [ -z "${GEMINI_API_KEY:-}" ]; then
@@ -50,7 +66,7 @@ else
     ENV_VARS_FLAG="--set-env-vars=NODE_ENV=production"
 fi
 
-echo "📦 Building and deploying directly from local source via Google Cloud Build..."
+echo "📦 Building and deploying directly from source via Google Cloud Run..."
 gcloud run deploy "${SERVICE_NAME}" \
     --source . \
     --project "${PROJECT_ID}" \

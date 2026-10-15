@@ -15,8 +15,9 @@ RUN npm ci
 # Copy project files
 COPY . .
 
-# Compile client frontend SPA to /app/dist
+# Compile client frontend SPA to /app/dist and server to /app/dist/server.js
 RUN npm run build
+RUN npx esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js
 
 # Remove development dependencies to keep the image lightweight
 RUN npm prune --omit=dev
@@ -41,5 +42,5 @@ COPY --from=builder /app/firebase-blueprint.json ./
 # Expose default Cloud Run port
 EXPOSE 8080
 
-# Start server using Node 22 native TypeScript stripping
-CMD ["node", "server.ts"]
+# Start production server using compiled JS bundle
+CMD ["node", "dist/server.js"]

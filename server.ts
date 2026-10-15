@@ -628,26 +628,40 @@ Produce a well-structured study guide with:
 // Public endpoints for Google OAuth Verification & Crawler / Browser access
 app.get(['/privacy', '/privacy-policy'], (_req, res) => {
   const isProd = process.env.NODE_ENV === 'production';
-  const privacyPath = isProd
-    ? path.resolve(__dirname, 'dist', 'privacy.html')
+  const distDir = fs.existsSync(path.resolve(__dirname, 'dist'))
+    ? path.resolve(__dirname, 'dist')
+    : (fs.existsSync(path.resolve(__dirname, 'index.html')) ? __dirname : path.resolve(process.cwd(), 'dist'));
+
+  const privacyPath = fs.existsSync(path.resolve(distDir, 'privacy.html'))
+    ? path.resolve(distDir, 'privacy.html')
     : path.resolve(__dirname, 'public', 'privacy.html');
   if (fs.existsSync(privacyPath)) {
     return res.sendFile(privacyPath);
   }
-  const indexPath = path.resolve(__dirname, isProd ? 'dist/index.html' : 'index.html');
-  res.sendFile(indexPath);
+  const indexPath = path.resolve(distDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.sendFile(path.resolve(process.cwd(), 'index.html'));
 });
 
 app.get(['/terms', '/terms-of-service'], (_req, res) => {
   const isProd = process.env.NODE_ENV === 'production';
-  const termsPath = isProd
-    ? path.resolve(__dirname, 'dist', 'terms.html')
+  const distDir = fs.existsSync(path.resolve(__dirname, 'dist'))
+    ? path.resolve(__dirname, 'dist')
+    : (fs.existsSync(path.resolve(__dirname, 'index.html')) ? __dirname : path.resolve(process.cwd(), 'dist'));
+
+  const termsPath = fs.existsSync(path.resolve(distDir, 'terms.html'))
+    ? path.resolve(distDir, 'terms.html')
     : path.resolve(__dirname, 'public', 'terms.html');
   if (fs.existsSync(termsPath)) {
     return res.sendFile(termsPath);
   }
-  const indexPath = path.resolve(__dirname, isProd ? 'dist/index.html' : 'index.html');
-  res.sendFile(indexPath);
+  const indexPath = path.resolve(distDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.sendFile(path.resolve(process.cwd(), 'index.html'));
 });
 
 // Port 3000 is strictly required by AI Studio dev environment; Cloud Run sets PORT in production
@@ -657,6 +671,10 @@ const PORT = process.env.NODE_ENV === 'production'
 
 async function startServer() {
   try {
+    const distDir = fs.existsSync(path.resolve(__dirname, 'dist'))
+      ? path.resolve(__dirname, 'dist')
+      : (fs.existsSync(path.resolve(__dirname, 'index.html')) ? __dirname : path.resolve(process.cwd(), 'dist'));
+
     if (process.env.NODE_ENV !== 'production') {
       const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
@@ -665,9 +683,13 @@ async function startServer() {
       });
       app.use(vite.middlewares);
     } else {
-      app.use(express.static(path.resolve(__dirname, 'dist')));
+      app.use(express.static(distDir));
       app.get('*', (_req, res) => {
-        res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+        const indexPath = path.resolve(distDir, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          return res.sendFile(indexPath);
+        }
+        res.sendFile(path.resolve(process.cwd(), 'dist', 'index.html'));
       });
     }
 
