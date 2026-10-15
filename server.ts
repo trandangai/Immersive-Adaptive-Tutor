@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI, Type } from '@google/genai';
+import mammoth from 'mammoth';
 
 dotenv.config();
 
@@ -46,33 +47,44 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// 1. Generate Session Roadmap
+// 1. Generate Session Roadmap strictly grounded in provided content/topic
 app.post('/api/gemini/generate-roadmap', async (req, res) => {
   try {
     const { content, topicTitle } = req.body;
-    if (!content && !topicTitle) {
-      return res.status(400).json({ error: 'Missing content or topicTitle' });
+    const cleanContent = typeof content === 'string' ? content.trim() : '';
+    const cleanTitle = typeof topicTitle === 'string' ? topicTitle.trim() : '';
+
+    if (!cleanContent && !cleanTitle) {
+      return res.status(400).json({ error: 'Please provide either document content or a curriculum topic title.' });
     }
 
-    const prompt = `You are an expert curriculum designer and cognitive learning scientist.
-Analyze the following study material or topic and extract a clear, structured "Session Roadmap" for an adaptive Socratic voice tutoring session.
+    const effectiveTitle = cleanTitle || 'Study Document';
+    const effectiveContent = cleanContent || cleanTitle;
 
-Material / Topic:
-"${content || topicTitle}"
+    const prompt = `You are a curriculum designer and cognitive learning scientist.
+Create a structured 4 to 5 checkpoint "Session Roadmap" for an adaptive Socratic voice tutoring session.
 
-Create 4 to 5 progressive learning checkpoints leading from foundational intuition to intermediate mastery to advanced application.
-For each checkpoint provide:
-- id: e.g. "cp-1"
-- title: concise concept name (e.g., "The Proton Gradient Engine")
-- description: 1-2 sentence core idea
-- keyQuestion: the foundational check-for-understanding question the tutor will ask
+CRITICAL CONSTRAINT: The roadmap MUST be strictly and explicitly grounded in the provided document material and topic below. Do NOT generate unrelated or random topics. Every checkpoint must directly teach concepts from this specific material.
+
+Document Title / Subject: "${effectiveTitle}"
+
+Study Material Content:
+"""
+${effectiveContent.slice(0, 40000)}
+"""
+
+Create 4 to 5 progressive learning checkpoints:
+- id: "cp-1", "cp-2", etc.
+- title: concise concept name representing an essential component from this specific material
+- description: 1-2 sentence core concept explanation
+- keyQuestion: the foundational Socratic question the tutor will ask the learner to test their intuitive mental model
 - estimatedMinutes: number between 3 and 7
 
 Also determine:
-- topicTitle: clean title
-- subjectArea: e.g., "Cellular Biology", "Distributed Systems", "Machine Learning", "Quantum Physics"
+- topicTitle: clean, descriptive title reflecting this specific document/topic (e.g., "${effectiveTitle}")
+- subjectArea: academic field (e.g., "Cellular Biology", "Distributed Systems", "Applied Physics", "Constitutional Law")
 - baselineDifficulty: "beginner" | "intermediate" | "advanced"
-- summary: high-level overview in 2 sentences`;
+- summary: 2-sentence executive overview of what will be learned from this specific material`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-flash-lite',
@@ -107,9 +119,100 @@ Also determine:
     });
 
     const roadmapData = JSON.parse(response.text || '{}');
+    if (!roadmapData.topicTitle || !roadmapData.checkpoints || roadmapData.checkpoints.length === 0) {
+      throw new Error('AI generated an invalid roadmap structure. Please check document content and retry.');
+    }
+
     res.json(roadmapData);
   } catch (err) {
-    handleApiError(res, err, 'Failed to generate roadmap');
+    handleApiError(res, err, 'Failed to generate roadmap from document');
+  }
+});
+
+// 1.5. Extract Document Content (PDF, DOCX, TXT, MD) via Gemini and Mammoth
+app.post('/api/extract-document', async (req, res) => {
+  try {
+    const { base64Data, mimeType, filename } = req.body;
+    if (!base64Data) {
+      return res.status(400).json({ error: 'No document data received. Please select a valid file.' });
+    }
+
+    const safeFilename = filename || 'document';
+    const lowerName = safeFilename.toLowerCase();
+    const isDocx = lowerName.endsWith('.docx') || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const isPdf = lowerName.endsWith('.pdf') || mimeType === 'application/pdf';
+
+    // 1. Word Document (.docx) via Mammoth
+    if (isDocx) {
+      const buffer = Buffer.from(base64Data, 'base64');
+      const docxResult = await mammoth.extractRawText({ buffer });
+      const extractedText = (docxResult.value || '').trim();
+
+      if (!extractedText) {
+        return res.status(422).json({
+          error: 'The Word document appears empty or could not be converted to plain text. Please check the file or copy-paste text.'
+        });
+      }
+
+      return res.json({
+        text: extractedText,
+        filename: safeFilename,
+        charCount: extractedText.length,
+        format: 'docx',
+      });
+    }
+
+    // 2. PDF Document via Gemini Multimodal
+    if (isPdf) {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-lite',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType: 'application/pdf',
+                  data: base64Data,
+                },
+              },
+              {
+                text: 'Extract and transcribe all text, curriculum content, syllabus sections, lecture notes, formula explanations, and conceptual material from this PDF document completely and faithfully. Return ONLY the comprehensive textual content of the document in plain text format. Do NOT add meta greetings, introductory sentences, or conversational tutoring questions.',
+              },
+            ],
+          },
+        ],
+      });
+
+      const extractedText = (response.text || '').trim();
+      if (!extractedText || extractedText.length < 10) {
+        return res.status(422).json({
+          error: 'Could not extract readable text from this PDF (it may be scanned images without OCR or password protected). Please paste text directly.'
+        });
+      }
+
+      return res.json({
+        text: extractedText,
+        filename: safeFilename,
+        charCount: extractedText.length,
+        format: 'pdf',
+      });
+    }
+
+    // 3. Plain Text / Markdown / CSV / JSON
+    const decoded = Buffer.from(base64Data, 'base64').toString('utf-8').trim();
+    if (!decoded) {
+      return res.status(422).json({ error: 'The uploaded file is empty.' });
+    }
+
+    res.json({
+      text: decoded,
+      filename: safeFilename,
+      charCount: decoded.length,
+      format: 'text',
+    });
+  } catch (err) {
+    handleApiError(res, err, 'Failed to extract document text');
   }
 });
 
@@ -280,7 +383,10 @@ function createFallbackWavAudio(): string {
   return buffer.toString('base64');
 }
 
-// 3. Text-to-Speech using Gemini 3.8 Flash Lite TTS
+// Cooldown timestamp to prevent hammering Gemini TTS when daily free-tier quota is reached
+let ttsQuotaExhaustedUntil = 0;
+
+// 3. Text-to-Speech using Gemini 3.8 Flash Lite TTS with automatic Web Speech delegation
 app.post('/api/gemini/tts', async (req, res) => {
   try {
     const { text, voice = 'Kore', personaTone = 'socratic' } = req.body;
@@ -299,6 +405,19 @@ app.post('/api/gemini/tts', async (req, res) => {
       speechStyle = 'Sharp, intellectually stimulating, direct, thoughtful academic professor';
     } else {
       speechStyle = 'Inquiring, measured, engaging, thoughtful Socratic dialogist';
+    }
+
+    // If quota cooldown is currently active, avoid making failed API calls and console errors
+    if (Date.now() < ttsQuotaExhaustedUntil) {
+      const fallbackAudio = createFallbackWavAudio();
+      return res.json({
+        audioBase64: null,
+        audioData: fallbackAudio,
+        mimeType: 'audio/wav',
+        usedGeminiTTS: false,
+        quotaExceeded: true,
+        message: 'Browser Web Speech API active (Gemini TTS Free Tier daily quota resting)',
+      });
     }
 
     try {
@@ -336,28 +455,44 @@ app.post('/api/gemini/tts', async (req, res) => {
           usedGeminiTTS: true,
         });
       }
-    } catch (ttsErr) {
-      console.warn('Gemini 3.8 Flash Lite TTS call failed (fallback activated):', ttsErr);
+    } catch (ttsErr: unknown) {
+      const errObj = (ttsErr && typeof ttsErr === 'object') ? (ttsErr as Record<string, unknown>) : {};
+      const errMsg = errObj.message ? String(errObj.message) : String(ttsErr);
+      const isQuota =
+        errObj.status === 'RESOURCE_EXHAUSTED' ||
+        errMsg.includes('429') ||
+        errMsg.includes('RESOURCE_EXHAUSTED') ||
+        errMsg.includes('Quota exceeded') ||
+        errMsg.includes('quota');
+
+      if (isQuota) {
+        // Cooldown for 1 hour so the server doesn't spam 429 errors or log exception traces
+        ttsQuotaExhaustedUntil = Date.now() + 60 * 60 * 1000;
+        console.log('[TTS] Gemini 3.8 Flash Lite TTS daily free-tier limit reached (10/day). Gracefully delegating voice playback to browser Web Speech API.');
+      } else {
+        console.log('[TTS] Gemini TTS response notice, falling back to browser speech:', errMsg.slice(0, 100));
+      }
     }
 
-    // If Gemini TTS is not available or quota exceeded, provide graceful acoustic buffer + indicator
+    // Graceful fallback: client will speak naturally using browser Web Speech API
     const fallbackAudio = createFallbackWavAudio();
     res.json({
-      audioBase64: fallbackAudio,
+      audioBase64: null,
       audioData: fallbackAudio,
       mimeType: 'audio/wav',
       usedGeminiTTS: false,
-      message: 'Browser Web Speech API active (Gemini TTS Free Tier daily quota limit reached)',
+      quotaExceeded: true,
+      message: 'Browser Web Speech API active (Gemini TTS Free Tier daily quota reached)',
     });
   } catch (err) {
     handleApiError(res, err, 'TTS processing error');
   }
 });
 
-// 4. Audio Transcription with gemini-3.5-transcribe
+// 4. Audio Transcription with gemini-3.8-flash (multimodal audio transcription)
 app.post('/api/gemini/transcribe', async (req, res) => {
   try {
-    const { base64Audio, mimeType = 'audio/webm' } = req.body;
+    const { base64Audio, mimeType = 'audio/webm', language = 'auto' } = req.body;
     if (!base64Audio) {
       return res.status(400).json({ error: 'Missing audio data' });
     }
@@ -368,23 +503,38 @@ app.post('/api/gemini/transcribe', async (req, res) => {
     const normalizedMime = (mimeType || 'audio/webm').split(';')[0].trim() || 'audio/webm';
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.5-transcribe',
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              mimeType: normalizedMime,
-              data: cleanBase64,
+      model: 'gemini-3.8-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              inlineData: {
+                mimeType: normalizedMime,
+                data: cleanBase64,
+              },
             },
-          },
-          {
-            text: 'Transcribe what the student said accurately and cleanly into English text. Return only the transcription.',
-          },
-        ],
-      },
+            {
+              text: `Listen carefully to the student's spoken voice in this audio and transcribe their words accurately.
+If the student spoke in Vietnamese, transcribe faithfully in Vietnamese.
+If the student spoke in English, transcribe in English.
+Target language preference: ${language}.
+Return ONLY the transcribed text. Do NOT add notes, explanations, or quotes.
+If the audio contains only silence, background breathing, or noise without any spoken words, return exactly: EMPTY`,
+            },
+          ],
+        },
+      ],
     });
 
-    const transcription = response.text?.trim() || '';
+    let transcription = (response.text || '').trim();
+    // Strip quotes or EMPTY token
+    if (transcription.toUpperCase() === 'EMPTY' || transcription.toLowerCase() === 'empty.') {
+      transcription = '';
+    } else {
+      transcription = transcription.replace(/^["']|["']$/g, '').trim();
+    }
+
     res.json({ text: transcription });
   } catch (err) {
     handleApiError(res, err, 'Audio transcription failed');

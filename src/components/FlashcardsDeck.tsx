@@ -11,11 +11,13 @@ import {
 
 interface FlashcardsDeckProps {
   flashcards: Flashcard[];
+  currentUserEmail?: string | null;
   onToggleMastery?: (cardId: string, currentStatus: boolean) => void;
 }
 
 export const FlashcardsDeck: React.FC<FlashcardsDeckProps> = ({
   flashcards,
+  currentUserEmail,
   onToggleMastery,
 }) => {
   const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
@@ -41,7 +43,9 @@ export const FlashcardsDeck: React.FC<FlashcardsDeckProps> = ({
           No Flashcards Generated Yet
         </h4>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1 leading-relaxed">
-          As you master checkpoints during your conversational voice session, the Socratic tutor will automatically synthesize high-yield flashcards here in real time.
+          {currentUserEmail
+            ? `No flashcards generated yet for ${currentUserEmail}. As you master checkpoints in your voice session, your personal deck will be created and saved here in Firestore.`
+            : 'As you master checkpoints during your conversational voice session, the Socratic tutor will automatically synthesize high-yield flashcards here in real time.'}
         </p>
       </div>
     );
@@ -56,12 +60,19 @@ export const FlashcardsDeck: React.FC<FlashcardsDeckProps> = ({
             <Layers className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              Socratic Flashcard Deck
-              <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-500/30 text-violet-800 dark:text-violet-300 font-bold font-mono">
-                {flashcards.length}
-              </span>
-            </h3>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                Socratic Flashcard Deck
+                <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-500/30 text-violet-800 dark:text-violet-300 font-bold font-mono">
+                  {flashcards.length}
+                </span>
+              </h3>
+              {currentUserEmail && (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/50">
+                  Account: {currentUserEmail}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Interactive 3D study cards distilled from verbal reasoning breakthroughs
             </p>

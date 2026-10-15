@@ -40,7 +40,7 @@ import { TestRunnerModal } from './components/TestRunnerModal.tsx';
 import { PrivacyPolicy } from './components/PrivacyPolicy.tsx';
 import { TermsOfService } from './components/TermsOfService.tsx';
 import { Footer } from './components/Footer.tsx';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Mic, ArrowRight } from 'lucide-react';
 
 export default function App() {
   // Authentication & Profile
@@ -52,6 +52,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'tutor' | 'flashcards' | 'history'>('tutor');
   const [viewState, setViewState] = useState<'ingest' | 'roadmap' | 'session' | 'summary'>('ingest');
 
+  // Active Voice Session State (keeps session alive in background across tabs/views)
+  const [hasActiveVoiceSession, setHasActiveVoiceSession] = useState(false);
+  const [activeCheckpointIndex, setActiveCheckpointIndex] = useState(0);
+  const [sessionKey, setSessionKey] = useState(1);
+
   // Core Data
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
@@ -62,6 +67,8 @@ export default function App() {
   const [isLoadingRoadmap, setIsLoadingRoadmap] = useState(false);
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [driveModalTab, setDriveModalTab] = useState<'upload' | 'samples' | 'drive'>('upload');
+  const [ingestPrefill, setIngestPrefill] = useState<{ topicTitle: string; content: string } | null>(null);
   const [isTestRunnerOpen, setIsTestRunnerOpen] = useState(false);
   // Persistent dark mode state
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -124,11 +131,17 @@ export default function App() {
 
     const unsubscribe = initAuth(
       async (authenticatedUser, token) => {
+        // Immediately reset in-memory data from any previous account/guest session
+        setFlashcards([]);
+        setPastSessions([]);
+        setCompletedSession(null);
+        setHasActiveVoiceSession(false);
+
         setUser(authenticatedUser);
         setHasDriveToken(Boolean(token));
-        showToast(`Signed in as ${authenticatedUser.displayName || 'Learner'}`, 'success');
+        showToast(`Signed in as ${authenticatedUser.displayName || authenticatedUser.email || 'Learner'}`, 'success');
 
-        // Sync profile & load Firestore data
+        // Sync profile & load Firestore data strictly for this authenticated account
         try {
           const userProf = await syncUserProfile({
             userId: authenticatedUser.uid,
@@ -138,23 +151,36 @@ export default function App() {
           });
           setProfile(userProf);
 
+          // Fetch only this account's flashcards from Firestore
           const userCards = await fetchUserFlashcards(authenticatedUser.uid);
-          if (userCards && userCards.length > 0) {
-            setFlashcards(userCards);
-          }
+          setFlashcards(userCards || []);
 
+          // Fetch only this account's sessions from Firestore
           const userSessions = await fetchUserSessions(authenticatedUser.uid);
-          if (userSessions && userSessions.length > 0) {
-            setPastSessions(userSessions);
-          }
+          setPastSessions(userSessions || []);
         } catch (err) {
           console.warn('Initial Firestore fetch warning:', err);
+          setFlashcards([]);
+          setPastSessions([]);
         }
       },
       () => {
+        // User logged out: completely clear account-specific memory and active session caches
         setUser(null);
         setProfile(null);
         setHasDriveToken(false);
+        setFlashcards([]);
+        setPastSessions([]);
+        setCompletedSession(null);
+        setRoadmap(null);
+        setHasActiveVoiceSession(false);
+        try {
+          Object.keys(sessionStorage).forEach(key => {
+            if (key.startsWith('socratic_active_session_')) {
+              sessionStorage.removeItem(key);
+            }
+          });
+        } catch {}
       }
     );
 
@@ -180,6 +206,21 @@ export default function App() {
   const handleSignOut = async () => {
     try {
       await logOut();
+      setUser(null);
+      setProfile(null);
+      setHasDriveToken(false);
+      setFlashcards([]);
+      setPastSessions([]);
+      setCompletedSession(null);
+      setRoadmap(null);
+      setHasActiveVoiceSession(false);
+      try {
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.startsWith('socratic_active_session_')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      } catch {}
       showToast('Signed out successfully', 'info');
     } catch (err) {
       console.error(err);
@@ -202,6 +243,9 @@ export default function App() {
 
       const generatedRoadmap: Roadmap = await res.json();
       setRoadmap(generatedRoadmap);
+      setHasActiveVoiceSession(false);
+      setActiveCheckpointIndex(0);
+      setSessionKey(k => k + 1);
       setViewState('roadmap');
       setActiveTab('tutor');
       showToast(`Roadmap ready: ${generatedRoadmap.topicTitle}`, 'success');
@@ -212,9 +256,45 @@ export default function App() {
     }
   };
 
-  // Handle Google Drive Document selection
-  const handleDriveDocumentImported = (content: string, filename: string) => {
-    handleGenerateRoadmap(content, filename.replace(/\.[^/.]+$/, ''));
+  // Handle Navigation
+  const handleNavigateHome = () => {
+    setLegalPage('none');
+    setActiveTab('tutor');
+    setViewState('ingest');
+  };
+
+  const handleResumeVoiceSession = () => {
+    setActiveTab('tutor');
+    setViewState('session');
+  };
+
+  const handleStartVoiceSession = (restart = false) => {
+    if (restart) {
+      if (roadmap) {
+        try {
+          sessionStorage.removeItem(`socratic_active_session_${roadmap.topicTitle.replace(/[^a-zA-Z0-9]/g, '_')}`);
+        } catch {}
+      }
+      setSessionKey(k => k + 1);
+      setActiveCheckpointIndex(0);
+    }
+    setHasActiveVoiceSession(true);
+    setViewState('session');
+    setActiveTab('tutor');
+  };
+
+  // Handle Google Drive / Document Upload selection
+  const handleDriveDocumentImported = (content: string, filename: string, autoGenerate: boolean = true) => {
+    const cleanTitle = filename.replace(/\.[^/.]+$/, '').trim();
+    setIngestPrefill({ topicTitle: cleanTitle, content });
+
+    if (autoGenerate) {
+      handleGenerateRoadmap(content, cleanTitle);
+    } else {
+      setViewState('ingest');
+      setActiveTab('tutor');
+      showToast(`Loaded document: ${cleanTitle}`, 'info');
+    }
   };
 
   // Complete Tutoring Session
@@ -258,6 +338,7 @@ export default function App() {
 
     setCompletedSession(newRecord);
     setPastSessions(prev => [newRecord, ...prev]);
+    setHasActiveVoiceSession(false);
     setViewState('summary');
 
     // Auto-save to Firestore if signed in
@@ -276,11 +357,9 @@ export default function App() {
 
     setIsSavingSession(true);
     try {
-      await saveSessionRecord(user.uid, session);
-
       // Save flashcards
       const cards = cardsToSave || flashcards;
-      for (const card of cards.slice(0, 5)) {
+      for (const card of cards) {
         await saveFlashcardDoc(user.uid, card);
       }
 
@@ -290,6 +369,22 @@ export default function App() {
       console.error(err);
     } finally {
       setIsSavingSession(false);
+    }
+  };
+
+  // Real-time flashcard generated during session
+  const handleFlashcardGenerated = async (card: Flashcard) => {
+    setFlashcards(prev => {
+      if (prev.some(c => c.id === card.id)) return prev;
+      return [card, ...prev];
+    });
+
+    if (user) {
+      try {
+        await saveFlashcardDoc(user.uid, card);
+      } catch (err) {
+        console.warn('Could not auto-save generated flashcard to Firestore:', err);
+      }
     }
   };
 
@@ -347,12 +442,20 @@ export default function App() {
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'tutor' && hasActiveVoiceSession) {
+            setViewState('session');
+          }
+        }}
         flashcardCount={flashcards.length}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         onOpenDriveModal={() => setIsDriveModalOpen(true)}
         onOpenTestRunner={() => setIsTestRunnerOpen(true)}
+        onNavigateHome={handleNavigateHome}
+        hasActiveVoiceSession={hasActiveVoiceSession}
+        onResumeVoiceSession={handleResumeVoiceSession}
       />
 
       {/* Main Content Area */}
@@ -373,24 +476,27 @@ export default function App() {
                 {viewState === 'ingest' && (
                   <MaterialIngestion
                     onGenerateRoadmap={handleGenerateRoadmap}
-                    onOpenDriveModal={() => setIsDriveModalOpen(true)}
+                    onOpenDriveModal={(tab = 'upload') => {
+                      setDriveModalTab(tab);
+                      setIsDriveModalOpen(true);
+                    }}
                     isLoading={isLoadingRoadmap}
+                    initialTopic={ingestPrefill?.topicTitle}
+                    initialContent={ingestPrefill?.content}
                   />
                 )}
 
                 {viewState === 'roadmap' && roadmap && (
                   <RoadmapView
                     roadmap={roadmap}
-                    onStartSession={() => setViewState('session')}
-                    onReset={() => setViewState('ingest')}
-                  />
-                )}
-
-                {viewState === 'session' && roadmap && (
-                  <SocraticVoiceSession
-                    roadmap={roadmap}
-                    onFinishSession={handleFinishVoiceSession}
-                    onBackToRoadmap={() => setViewState('roadmap')}
+                    onStartSession={() => handleStartVoiceSession(hasActiveVoiceSession)}
+                    onResumeSession={handleResumeVoiceSession}
+                    hasActiveSession={hasActiveVoiceSession}
+                    activeCheckpointIndex={activeCheckpointIndex}
+                    onReset={() => {
+                      setHasActiveVoiceSession(false);
+                      setViewState('ingest');
+                    }}
                   />
                 )}
 
@@ -400,6 +506,7 @@ export default function App() {
                     flashcards={flashcards}
                     onStartNewSession={() => {
                       setRoadmap(null);
+                      setHasActiveVoiceSession(false);
                       setViewState('ingest');
                     }}
                     onSaveToCloud={() => saveSessionToCloud()}
@@ -409,11 +516,28 @@ export default function App() {
               </>
             )}
 
+            {/* Socratic Voice Session - Preserved in DOM across all tabs while session is active to prevent repeating speech and maintain live dialogue */}
+            {hasActiveVoiceSession && roadmap && (
+              <div className={activeTab === 'tutor' && viewState === 'session' ? 'block w-full' : 'hidden'}>
+                <SocraticVoiceSession
+                  key={sessionKey}
+                  roadmap={roadmap}
+                  userId={user?.uid}
+                  isActive={activeTab === 'tutor' && viewState === 'session'}
+                  onCheckpointIndexChange={setActiveCheckpointIndex}
+                  onFinishSession={handleFinishVoiceSession}
+                  onFlashcardGenerated={handleFlashcardGenerated}
+                  onBackToRoadmap={() => setViewState('roadmap')}
+                />
+              </div>
+            )}
+
             {/* TAB 2: Flashcards Deck */}
             {activeTab === 'flashcards' && (
               <div className="max-w-4xl mx-auto w-full">
                 <FlashcardsDeck
                   flashcards={flashcards}
+                  currentUserEmail={user?.email}
                   onToggleMastery={handleToggleCardMastery}
                 />
               </div>
@@ -424,6 +548,7 @@ export default function App() {
               <div className="w-full">
                 <HistoryDrawer
                   sessions={pastSessions}
+                  currentUserEmail={user?.email}
                   onSelectSession={session => {
                     setCompletedSession(session);
                     setViewState('summary');
@@ -440,6 +565,34 @@ export default function App() {
         )}
       </main>
 
+      {/* Floating Active Voice Session Quick-Return Dock */}
+      {hasActiveVoiceSession && (viewState !== 'session' || activeTab !== 'tutor') && roadmap && (
+        <div className="fixed bottom-6 right-6 z-40 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-white/95 dark:bg-[#080e1e]/95 backdrop-blur-xl border border-cyan-400/60 dark:border-cyan-500/50 shadow-2xl shadow-cyan-500/25 text-slate-900 dark:text-slate-100">
+            <div className="relative flex h-3 w-3 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+            </div>
+            <div className="hidden sm:block text-left">
+              <p className="text-xs font-bold leading-tight text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <span>Voice Session in Progress</span>
+              </p>
+              <p className="text-[11px] text-cyan-600 dark:text-cyan-400 font-mono truncate max-w-[220px]">
+                Checkpoint {activeCheckpointIndex + 1}: {roadmap.checkpoints[activeCheckpointIndex]?.title || roadmap.topicTitle}
+              </p>
+            </div>
+            <button
+              onClick={handleResumeVoiceSession}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 active:scale-95 text-slate-950 font-black text-xs shadow-md shadow-cyan-500/20 cursor-pointer transition-all whitespace-nowrap"
+            >
+              <Mic className="w-3.5 h-3.5 text-slate-950 animate-pulse" />
+              <span>Back to Cockpit</span>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-950" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Footer with Privacy Policy and Terms of Service links */}
       <Footer onNavigate={handleNavigateLegal} />
 
@@ -448,6 +601,7 @@ export default function App() {
         isOpen={isDriveModalOpen}
         onClose={() => setIsDriveModalOpen(false)}
         onSelectDocument={handleDriveDocumentImported}
+        initialTab={driveModalTab}
       />
 
       {/* System Test Functions & Diagnostics Modal */}

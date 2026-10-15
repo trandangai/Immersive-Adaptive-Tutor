@@ -40,6 +40,9 @@ Key Concepts:
 ];
 
 export async function fetchDriveFiles(accessToken: string): Promise<DriveFile[]> {
+  if (!accessToken || !accessToken.trim()) {
+    throw new Error('INSUFFICIENT_DRIVE_PERMISSIONS');
+  }
   try {
     const url = new URL('https://www.googleapis.com/drive/v3/files');
     url.searchParams.set('pageSize', '25');
@@ -58,7 +61,10 @@ export async function fetchDriveFiles(accessToken: string): Promise<DriveFile[]>
 
     if (!res.ok) {
       const errBody = await res.text();
-      console.error('Google Drive API error:', res.status, errBody);
+      console.warn('Google Drive API response:', res.status, errBody);
+      if (res.status === 403 || res.status === 401) {
+        throw new Error('INSUFFICIENT_DRIVE_PERMISSIONS');
+      }
       throw new Error(`Google Drive API error: ${res.statusText}`);
     }
 
@@ -89,6 +95,41 @@ export async function fetchDriveFileContent(accessToken: string, file: DriveFile
 
     if (!res.ok) {
       throw new Error(`Failed to fetch file content: ${res.statusText}`);
+    }
+
+    const isPdf = file.mimeType === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isDocx = file.name.toLowerCase().endsWith('.docx');
+
+    if (isPdf || isDocx) {
+      const blob = await res.blob();
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1] || '');
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(blob);
+      const base64Data = await base64Promise;
+
+      const extractRes = await fetch('/api/extract-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base64Data,
+          mimeType: file.mimeType,
+          filename: file.name,
+        }),
+      });
+
+      if (!extractRes.ok) {
+        const errJson = await extractRes.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Failed to extract text from Google Drive document');
+      }
+
+      const data = await extractRes.json();
+      return data.text || '';
     }
 
     return await res.text();

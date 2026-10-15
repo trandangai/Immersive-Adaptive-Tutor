@@ -12,12 +12,14 @@ import {
 
 interface HistoryDrawerProps {
   sessions: SessionRecord[];
+  currentUserEmail?: string | null;
   onSelectSession: (session: SessionRecord) => void;
   onStartNew: () => void;
 }
 
 export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
   sessions,
+  currentUserEmail,
   onSelectSession,
   onStartNew,
 }) => {
@@ -31,7 +33,9 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
           No Session History Yet
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1 mb-5 leading-relaxed">
-          Start your first conversational session! Once completed, your learning progression, mastery scores, and notes are securely preserved here in Firebase Firestore.
+          {currentUserEmail
+            ? `No sessions recorded yet for ${currentUserEmail}. Start your first conversational session, and your progression will be saved securely under your account in Firestore.`
+            : 'Start your first conversational session! Once completed, your learning progression, mastery scores, and notes are securely preserved here in Firebase Firestore.'}
         </p>
         <button
           onClick={onStartNew}
@@ -48,10 +52,17 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
     <div className="max-w-3xl mx-auto space-y-4 animate-in fade-in duration-300">
       <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-cyan-950/60">
         <div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <History className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-            Learning Session History
-          </h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <History className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+              Learning Session History
+            </h2>
+            {currentUserEmail && (
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/50">
+                Account: {currentUserEmail}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Past adaptive Socratic sessions stored securely in Firebase Firestore
           </p>

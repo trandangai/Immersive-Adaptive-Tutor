@@ -258,8 +258,10 @@ export const TestRunnerModal: React.FC<TestRunnerModalProps> = ({ isOpen, onClos
       updateTest('neural-tts', {
         status: 'passed',
         durationMs: Date.now() - start,
-        details: `Received audio buffer (${data.mimeType || 'audio/wav'}, length: ${data.audioData.length} chars)`,
-        payload: { request: reqBody, response: { mimeType: data.mimeType, audioDataLength: data.audioData.length } },
+        details: data.usedGeminiTTS
+          ? `Gemini Neural TTS audio buffer decoded (${data.mimeType || 'audio/wav'}, length: ${data.audioData.length} chars)`
+          : `Acoustic audio buffer ready & Web Speech fallback active (${data.message || 'Free tier quota resting'})`,
+        payload: { request: reqBody, response: { mimeType: data.mimeType, usedGeminiTTS: data.usedGeminiTTS, audioDataLength: data.audioData.length } },
       });
       return true;
     } catch (err: unknown) {

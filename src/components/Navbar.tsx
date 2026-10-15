@@ -26,6 +26,9 @@ interface NavbarProps {
   setDarkMode: (val: boolean) => void;
   onOpenDriveModal: () => void;
   onOpenTestRunner: () => void;
+  onNavigateHome: () => void;
+  hasActiveVoiceSession?: boolean;
+  onResumeVoiceSession?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,18 +44,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   setDarkMode,
   onOpenDriveModal,
   onOpenTestRunner,
+  onNavigateHome,
+  hasActiveVoiceSession,
+  onResumeVoiceSession,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#070b16]/90 backdrop-blur-xl border-b border-slate-200 dark:border-cyan-950/40 shadow-xs dark:shadow-none transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/30">
+        {/* Brand - Clickable to return to Main Page */}
+        <button
+          type="button"
+          onClick={onNavigateHome}
+          className="flex items-center gap-3 text-left group cursor-pointer focus:outline-none transition-transform active:scale-98"
+          title="Back to Main Page"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 via-cyan-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-400/30 group-hover:scale-105 group-hover:shadow-cyan-500/40 transition-all">
             <Sparkles className="w-4.5 h-4.5 text-cyan-100" />
           </div>
           <div>
             <div className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <span className="bg-gradient-to-r from-cyan-600 via-teal-600 to-violet-600 dark:from-slate-100 dark:via-cyan-100 dark:to-cyan-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-cyan-600 via-teal-600 to-violet-600 dark:from-slate-100 dark:via-cyan-100 dark:to-cyan-400 bg-clip-text text-transparent group-hover:brightness-110 transition-all">
                 Immersive Adaptive Tutor
               </span>
             </div>
@@ -60,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               Two-Way Socratic Voice <span className="text-cyan-600 dark:text-cyan-500/60 font-mono">·</span> Live Cognitive Telemetry
             </p>
           </div>
-        </div>
+        </button>
 
         {/* Center Navigation Tabs */}
         <nav className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-[#0b1220]/90 rounded-xl text-xs font-semibold border border-slate-200 dark:border-cyan-950/60 shadow-inner transition-colors">
@@ -104,8 +115,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Right Section: Diagnostics/Tests, Drive Badge, Theme Toggle, Google Sign-in */}
+        {/* Right Section: Diagnostics/Tests, Active Session Badge, Drive Badge, Theme Toggle, Google Sign-in */}
         <div className="flex items-center gap-2">
+          {/* Active Voice Session Quick-Return Button */}
+          {hasActiveVoiceSession && onResumeVoiceSession && (
+            <button
+              onClick={onResumeVoiceSession}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/40 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-500/25 transition-all text-xs font-bold shadow-xs cursor-pointer animate-in fade-in"
+              title="Return to Active Voice Cockpit"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+              </span>
+              <span className="hidden sm:inline">Active Cockpit:</span>
+              <span>Resume &rarr;</span>
+            </button>
+          )}
+
           {/* Test Functions / Diagnostics Button */}
           <button
             onClick={onOpenTestRunner}
