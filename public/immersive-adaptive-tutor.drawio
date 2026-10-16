@@ -259,4 +259,179 @@
       </root>
     </mxGraphModel>
   </diagram>
+
+  <!-- Diagram Tab 3: System Architecture -->
+  <diagram id="SystemArchitecture" name="3. System Architecture">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" background="#0d1117" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="arch_title" value="Immersive Adaptive Tutor — Full-Stack System Architecture" style="text;html=1;fontSize=22;fontStyle=1;fontColor=#22d3ee;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="450" y="25" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- TIER 1: Client Layer -->
+        <mxCell id="tier1_box" value="CLIENT PRESENTATION &amp; INTERACTION TIER (React SPA + Vite + Tailwind CSS)" style="swimlane;html=1;startSize=30;horizontal=1;fillColor=#0f172a;strokeColor=#38bdf8;fontColor=#38bdf8;fontStyle=1;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="1620" height="300" as="geometry" />
+        </mxCell>
+
+        <!-- Sub-box: UI Components -->
+        <mxCell id="ui_box" value="UI Components &amp; Studio Cockpit" style="swimlane;html=1;startSize=25;fillColor=#1e293b;strokeColor=#0284c7;fontColor=#7dd3fc;rounded=1;arcSize=4;" vertex="1" parent="tier1_box">
+          <mxGeometry x="30" y="45" width="980" height="235" as="geometry" />
+        </mxCell>
+        <mxCell id="c_nav" value="Navbar &amp; Auth Badge&#xa;(Firebase Auth State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#38bdf8;fontColor=#e2e8f0;" vertex="1" parent="ui_box">
+          <mxGeometry x="20" y="35" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ingest" value="MaterialIngestion &amp;&#xa;DriveModal (OAuth)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#38bdf8;fontColor=#e2e8f0;" vertex="1" parent="ui_box">
+          <mxGeometry x="200" y="35" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_roadmap" value="RoadmapView&#xa;(Milestone Stepper)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#10b981;fontColor=#a7f3d0;" vertex="1" parent="ui_box">
+          <mxGeometry x="380" y="35" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_cockpit" value="SocraticVoiceSession&#xa;(Split Studio Cockpit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#311042;strokeColor=#c084fc;fontColor=#f5d0fe;fontStyle=1;" vertex="1" parent="ui_box">
+          <mxGeometry x="560" y="35" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_telemetry" value="TelemetryWidget&#xa;(Comprehension/Pacing HUD)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064e3b;strokeColor=#34d399;fontColor=#a7f3d0;" vertex="1" parent="ui_box">
+          <mxGeometry x="760" y="35" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_vis" value="AudioVisualizer&#xa;(Dynamic Waveform Canvas)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#134e4a;strokeColor=#2dd4bf;fontColor=#99f6e4;" vertex="1" parent="ui_box">
+          <mxGeometry x="20" y="105" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_flashcards" value="FlashcardsDeck&#xa;(3D Perspective Flip Cards)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;" vertex="1" parent="ui_box">
+          <mxGeometry x="240" y="105" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_summary" value="SummaryDashboard&#xa;(PDF &amp; Markdown Exporter)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;fontColor=#fde68a;" vertex="1" parent="ui_box">
+          <mxGeometry x="460" y="105" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_history" value="HistoryDrawer&#xa;(Cloud Past Sessions)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#64748b;fontColor=#cbd5e1;" vertex="1" parent="ui_box">
+          <mxGeometry x="680" y="105" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c_persona" value="Persona Modulator: [Socratic | Encouraging | Challenging]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#a855f7;fontColor=#e9d5ff;fontStyle=2;" vertex="1" parent="ui_box">
+          <mxGeometry x="20" y="170" width="940" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Sub-box: Browser Web APIs -->
+        <mxCell id="webapis_box" value="Browser Web APIs" style="swimlane;html=1;startSize=25;fillColor=#1e293b;strokeColor=#f59e0b;fontColor=#fde68a;rounded=1;arcSize=4;" vertex="1" parent="tier1_box">
+          <mxGeometry x="1030" y="45" width="270" height="235" as="geometry" />
+        </mxCell>
+        <mxCell id="api_speech" value="Web Speech API&#xa;(webkitSpeechRecognition)&#xa;Hands-free Microphone STT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#f59e0b;fontColor=#fef3c7;" vertex="1" parent="webapis_box">
+          <mxGeometry x="20" y="40" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="api_webaudio" value="Web Audio API&#xa;(AudioContext, AnalyserNode)&#xa;Frequency &amp; Amplitude Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#f59e0b;fontColor=#fef3c7;" vertex="1" parent="webapis_box">
+          <mxGeometry x="20" y="105" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="api_synth" value="window.speechSynthesis&#xa;(Offline Audio TTS Fallback)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#f59e0b;fontColor=#fef3c7;" vertex="1" parent="webapis_box">
+          <mxGeometry x="20" y="170" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- Sub-box: Client Data Services -->
+        <mxCell id="services_box" value="Client Services (lib/)" style="swimlane;html=1;startSize=25;fillColor=#1e293b;strokeColor=#10b981;fontColor=#a7f3d0;rounded=1;arcSize=4;" vertex="1" parent="tier1_box">
+          <mxGeometry x="1320" y="45" width="270" height="235" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_firestore" value="firestoreService.ts&#xa;(CRUD for sessions &amp; records)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#10b981;fontColor=#d1fae5;" vertex="1" parent="services_box">
+          <mxGeometry x="20" y="40" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_drive" value="drive.ts&#xa;(OAuth Token &amp; File Fetcher)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#10b981;fontColor=#d1fae5;" vertex="1" parent="services_box">
+          <mxGeometry x="20" y="105" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_firebase" value="firebase.ts&#xa;(Firebase Auth &amp; App Init)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#10b981;fontColor=#d1fae5;" vertex="1" parent="services_box">
+          <mxGeometry x="20" y="170" width="230" height="45" as="geometry" />
+        </mxCell>
+
+        <!-- TIER 2: Backend Application Server -->
+        <mxCell id="tier2_box" value="BACKEND APPLICATION TIER (Full-Stack Express / Node.js — server.ts)" style="swimlane;html=1;startSize=30;horizontal=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="420" width="1620" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="srv_proxy" value="Vite Dev Middleware + Express Router&#xa;Zero Client-Side Key Exposure Security Boundary" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#818cf8;fontColor=#e0e7ff;fontStyle=1;" vertex="1" parent="tier2_box">
+          <mxGeometry x="30" y="45" width="450" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ep1" value="POST /api/generate-roadmap&#xa;• Validates text payload&#xa;• Applies curriculum schema&#xa;• Calls Gemini 3.1 Flash-Lite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#60a5fa;fontColor=#dbeafe;align=left;spacingLeft=10;" vertex="1" parent="tier2_box">
+          <mxGeometry x="30" y="100" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ep2" value="POST /api/socratic-turn&#xa;• Injects persona &amp; milestones&#xa;• Evaluates comprehension score&#xa;• Tracks speech pacing &amp; mastery&#xa;• Extracts live flashcards" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#311042;strokeColor=#c084fc;fontColor=#f5d0fe;align=left;spacingLeft=10;fontStyle=1;" vertex="1" parent="tier2_box">
+          <mxGeometry x="300" y="100" width="280" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ep3" value="POST /api/tts&#xa;• Synthesizes tutor response&#xa;• Gemini 2.5 Flash Speech&#xa;• Returns audio/wav buffer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;fontColor=#fef3c7;align=left;spacingLeft=10;" vertex="1" parent="tier2_box">
+          <mxGeometry x="600" y="100" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ep4" value="POST /api/analyze-document&#xa;• Parses raw text / Docs&#xa;• Generates summary breakdown&#xa;• Suggests session title" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#2dd4bf;fontColor=#ccfbf1;align=left;spacingLeft=10;" vertex="1" parent="tier2_box">
+          <mxGeometry x="860" y="100" width="240" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="srv_sdk" value="Google Gen AI SDK Layer&#xa;import { GoogleGenAI } from '@google/genai'&#xa;Server-side GEMINI_API_KEY resolution" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#a855f7;fontColor=#f3e8ff;fontStyle=1;" vertex="1" parent="tier2_box">
+          <mxGeometry x="1130" y="100" width="460" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- TIER 3: Cloud & External Services -->
+        <mxCell id="tier3_box" value="GOOGLE CLOUD &amp; EXTERNAL PLATFORM SERVICES TIER" style="swimlane;html=1;startSize=30;horizontal=1;fillColor=#064e3b;strokeColor=#10b981;fontColor=#34d399;fontStyle=1;rounded=1;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="690" width="1620" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="g_gemini_logic" value="Google Gemini 3.1 Flash-Lite&#xa;• System instruction tuning&#xa;• Structured JSON schema output&#xa;• Reasoning &amp; pedagogical turn engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="tier3_box">
+          <mxGeometry x="30" y="55" width="350" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="g_gemini_tts" value="Google Gemini 2.5 Flash&#xa;• Neural Text-to-Speech&#xa;• Realistic audio streaming&#xa;• Multi-language / expressive vocal output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;fontColor=#fde68a;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="tier3_box">
+          <mxGeometry x="410" y="55" width="340" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="g_drive" value="Google Workspace / Drive API v3&#xa;• Google OAuth 2.0 client token flow&#xa;• Files: list, search, and get metadata&#xa;• Direct text export of Google Docs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#22d3ee;fontColor=#67e8f9;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="tier3_box">
+          <mxGeometry x="780" y="55" width="340" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="g_firestore" value="Firebase Cloud Firestore&#xa;• Database ID: ai-studio-immersiveadaptiv&#xa;• Collection: /sessions&#xa;• Session summaries, roadmaps, scores &amp; decks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#ea580c;fontColor=#fdba74;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="tier3_box">
+          <mxGeometry x="1150" y="55" width="440" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Connect Tier 1 to Tier 2 (HTTP REST) -->
+        <mxCell id="e_c_s1" value="REST JSON / Audio stream" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#38bdf8;strokeWidth=2;fontColor=#38bdf8;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_cockpit" target="ep2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_c_s2" value="Roadmap request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#60a5fa;strokeWidth=2;fontColor=#60a5fa;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_ingest" target="ep1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="400" />
+              <mxPoint x="195" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c_s3" value="TTS audio request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;fontColor=#f59e0b;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_cockpit" target="ep3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="390" />
+              <mxPoint x="760" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Connect Tier 2 to Tier 3 -->
+        <mxCell id="e_s_g1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#818cf8;strokeWidth=2;" edge="1" parent="1" source="srv_sdk" target="g_gemini_logic">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1400" y="660" />
+              <mxPoint x="245" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s_g2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;" edge="1" parent="1" source="ep3" target="g_gemini_tts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Direct Client-to-Service Integrations -->
+        <mxCell id="e_c_drive" value="Drive API Token Call" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#22d3ee;strokeWidth=2;fontColor=#22d3ee;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="svc_drive" target="g_drive">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1475" y="390" />
+              <mxPoint x="990" y="390" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c_firestore" value="Firestore Read/Write" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ea580c;strokeWidth=2;fontColor=#fdba74;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="svc_firestore" target="g_firestore">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1475" y="405" />
+              <mxPoint x="1520" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>
