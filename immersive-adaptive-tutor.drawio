@@ -1,0 +1,262 @@
+<mxfile host="app.diagrams.net" modified="2026-10-16T07:28:00.000Z" agent="AI Studio" version="24.7.5" type="device">
+  <diagram id="ProcessFlow" name="1. End-to-End Process Flow">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" background="#0d1117" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Immersive Adaptive Tutor — End-to-End Process Flow" style="text;html=1;fontSize=22;fontStyle=1;fontColor=#22d3ee;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="30" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 1: Ingestion -->
+        <mxCell id="p1_box" value="1. MATERIAL INGESTION &amp; ROADMAP GENERATION" style="swimlane;html=1;startSize=30;horizontal=1;fillColor=#161e2e;strokeColor=#0284c7;fontColor=#38bdf8;fontStyle=1;rounded=1;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100" width="340" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="step_start" value="Start / Select Mode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#38bdf8;fontColor=#f8fafc;fontStyle=1;" vertex="1" parent="p1_box">
+          <mxGeometry x="40" y="50" width="260" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="step_sources" value="Choose Ingestion Source:&#xa;• Google Drive (OAuth Docs)&#xa;• Raw Text / Notes&#xa;• Pre-built Curated Topic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#64748b;fontColor=#cbd5e1;align=left;spacingLeft=15;" vertex="1" parent="p1_box">
+          <mxGeometry x="40" y="120" width="260" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="step_gemini_roadmap" value="POST /api/generate-roadmap&#xa;Gemini 3.1 Flash-Lite Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;" vertex="1" parent="p1_box">
+          <mxGeometry x="40" y="230" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="step_roadmap_ready" value="Curriculum Checkpoint Roadmap&#xa;(3–5 Progressive Milestones)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064e3b;strokeColor=#10b981;fontColor=#a7f3d0;fontStyle=1;" vertex="1" parent="p1_box">
+          <mxGeometry x="40" y="310" width="260" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Edges Phase 1 -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#38bdf8;strokeWidth=2;" edge="1" parent="p1_box" source="step_start" target="step_sources">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#818cf8;strokeWidth=2;" edge="1" parent="p1_box" source="step_sources" target="step_gemini_roadmap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10b981;strokeWidth=2;" edge="1" parent="p1_box" source="step_gemini_roadmap" target="step_roadmap_ready">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 2: Socratic Voice Cockpit -->
+        <mxCell id="p2_box" value="2. ACTIVE SOCRATIC VOICE COCKPIT" style="swimlane;html=1;startSize=30;horizontal=1;fillColor=#161e2e;strokeColor=#9333ea;fontColor=#c084fc;fontStyle=1;rounded=1;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="450" y="100" width="460" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="step_tutor_start" value="Tutor Initiates Milestone Dialogue&#xa;Sets Active Pedagogical Persona&#xa;(Socratic | Encouraging | Challenging)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#a855f7;fontColor=#f3e8ff;fontStyle=1;" vertex="1" parent="p2_box">
+          <mxGeometry x="40" y="50" width="380" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step_student_input" value="Student Verbal Defense / Response&#xa;• Hands-free Voice Input (Web Speech API)&#xa;• Optional Keyboard Text Input" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#38bdf8;fontColor=#e2e8f0;fontStyle=1;" vertex="1" parent="p2_box">
+          <mxGeometry x="40" y="140" width="380" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step_audio_vis" value="Harmonic Audio Visualizer&#xa;Dynamic Wave Rendering (AnalyserNode)&#xa;[Listening → Thinking → Speaking]" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#134e4a;strokeColor=#2dd4bf;fontColor=#99f6e4;" vertex="1" parent="p2_box">
+          <mxGeometry x="40" y="230" width="380" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="step_turn_engine" value="POST /api/socratic-turn (Gemini 3.1)&#xa;• Analyzes Conceptual Depth &amp; Accuracy&#xa;• Evaluates Speech Pacing &amp; Hesitation&#xa;• Updates Mastery Level (Novice → Master)&#xa;• Crafts Socratic Probing Question" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#311042;strokeColor=#c084fc;fontColor=#f5d0fe;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="p2_box">
+          <mxGeometry x="40" y="310" width="380" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="step_tts" value="Neural Speech Synthesis (TTS)&#xa;POST /api/tts (Gemini 2.5 Flash)&#xa;Streams tutor voice audio back to user" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;fontColor=#fde68a;fontStyle=1;" vertex="1" parent="p2_box">
+          <mxGeometry x="40" y="430" width="380" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step_checkpoint_check" value="Milestone Concept Understood?&#xa;Comprehension Score &gt;= 75%?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#38bdf8;fontColor=#38bdf8;fontStyle=1;" vertex="1" parent="p2_box">
+          <mxGeometry x="100" y="520" width="260" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Edges Phase 2 -->
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#a855f7;strokeWidth=2;" edge="1" parent="p2_box" source="step_tutor_start" target="step_student_input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#38bdf8;strokeWidth=2;" edge="1" parent="p2_box" source="step_student_input" target="step_audio_vis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2dd4bf;strokeWidth=2;" edge="1" parent="p2_box" source="step_audio_vis" target="step_turn_engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c084fc;strokeWidth=2;" edge="1" parent="p2_box" source="step_turn_engine" target="step_tts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;" edge="1" parent="p2_box" source="step_tts" target="step_checkpoint_check">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_loop_probe" value="No (Probe / Scaffold)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ef4444;strokeWidth=2;fontColor=#fca5a5;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="p2_box" source="step_checkpoint_check" target="step_student_input">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="560" />
+              <mxPoint x="430" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Edge from Phase 1 to Phase 2 -->
+        <mxCell id="e_p1_p2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10b981;strokeWidth=3;" edge="1" parent="1" source="step_roadmap_ready" target="step_tutor_start">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 3: Telemetry, Artifacts & Cloud -->
+        <mxCell id="p3_box" value="3. REAL-TIME TELEMETRY &amp; AUTOMATED ARTIFACTS" style="swimlane;html=1;startSize=30;horizontal=1;fillColor=#161e2e;strokeColor=#059669;fontColor=#34d399;fontStyle=1;rounded=1;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="960" y="100" width="380" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="step_telemetry_hud" value="Live Telemetry HUD Widget&#xa;• Comprehension: 0–100% Gauge&#xa;• Mastery Tier: Novice → Master&#xa;• Pacing Detector: Optimal / Fast / Slow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#064e3b;strokeColor=#10b981;fontColor=#a7f3d0;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="p3_box">
+          <mxGeometry x="40" y="50" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="step_takeaways" value="Live Concept Takeaways Feed&#xa;Auto-extracts key breakthroughs on the fly" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#38bdf8;fontColor=#e2e8f0;fontStyle=1;" vertex="1" parent="p3_box">
+          <mxGeometry x="40" y="160" width="300" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="step_flashcards" value="Automated 3D Flip Flashcards&#xa;Self-generates study deck targeting weak spots&#xa;Mastery Toggles ('Need Review' / 'Mastered')" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="p3_box">
+          <mxGeometry x="40" y="240" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="step_firestore" value="Cloud Firestore Session Persistence&#xa;Saves full session, scores, notes &amp; deck&#xa;to 'sessions' collection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#f59e0b;fontColor=#fde68a;fontStyle=1;" vertex="1" parent="p3_box">
+          <mxGeometry x="40" y="340" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step_export" value="Multi-Format Study Exports&#xa;• Styled Multi-Page PDF (jsPDF)&#xa;• Markdown Study Notes (.md)&#xa;• Copy Takeaways to Clipboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#22d3ee;fontColor=#67e8f9;fontStyle=1;align=left;spacingLeft=15;" vertex="1" parent="p3_box">
+          <mxGeometry x="40" y="430" width="300" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="step_history" value="Session Complete / Revisit via History Drawer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#065f46;strokeColor=#34d399;fontColor=#f0fdf4;fontStyle=1;" vertex="1" parent="p3_box">
+          <mxGeometry x="40" y="530" width="300" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Edges Phase 3 -->
+        <mxCell id="e_p2_p3" value="Yes (Advance)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10b981;strokeWidth=2;fontColor=#6ee7b7;" edge="1" parent="1" source="step_checkpoint_check" target="step_telemetry_hud">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="710" y="730" />
+              <mxPoint x="930" y="730" />
+              <mxPoint x="930" y="190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#38bdf8;strokeWidth=2;" edge="1" parent="p3_box" source="step_telemetry_hud" target="step_takeaways">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#818cf8;strokeWidth=2;" edge="1" parent="p3_box" source="step_takeaways" target="step_flashcards">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f59e0b;strokeWidth=2;" edge="1" parent="p3_box" source="step_flashcards" target="step_firestore">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#22d3ee;strokeWidth=2;" edge="1" parent="p3_box" source="step_firestore" target="step_export">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#34d399;strokeWidth=2;" edge="1" parent="p3_box" source="step_export" target="step_history">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- Diagram Tab 2: Use-Case Diagram -->
+  <diagram id="UseCaseDiagram" name="2. Use-Case Diagram">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" background="#0d1117" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="uc_title" value="Immersive Adaptive Tutor — UML Use-Case Diagram" style="text;html=1;fontSize=22;fontStyle=1;fontColor=#22d3ee;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="400" y="30" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- System Boundary -->
+        <mxCell id="uc_boundary" value="Immersive Adaptive Tutor System" style="swimlane;whiteSpace=wrap;html=1;fillColor=#161e2e;strokeColor=#38bdf8;fontColor=#38bdf8;fontStyle=1;rounded=1;arcSize=4;startSize=30;" vertex="1" parent="1">
+          <mxGeometry x="320" y="90" width="860" height="920" as="geometry" />
+        </mxCell>
+
+        <!-- Use Cases -->
+        <mxCell id="uc1" value="Authenticate via Google&#xa;(Firebase Auth)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#38bdf8;fontColor=#f8fafc;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="50" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" value="Browse &amp; Ingest Google Docs&#xa;(Google Drive API v3)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#38bdf8;fontColor=#f8fafc;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="130" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc3" value="Input Custom Topic / Raw Text" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#38bdf8;fontColor=#f8fafc;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="210" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" value="Generate Curriculum Roadmap&#xa;(3–5 Checkpoints)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="360" y="170" width="230" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc5" value="Conduct Hands-Free Voice Dialogue&#xa;(Web Speech STT + Visualizer)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#311042;strokeColor=#c084fc;fontColor=#f5d0fe;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="320" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="uc6" value="Select Tutor Persona&#xa;(Socratic, Encouraging, Challenging)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#a855f7;fontColor=#e2e8f0;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="420" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc7" value="Process Socratic Turn &amp; Telemetry&#xa;(Comprehension, Pacing, Mastery)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="360" y="360" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="uc8" value="Synthesize Neural Tutor Voice&#xa;(Gemini TTS API)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#818cf8;fontColor=#c7d2fe;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="580" y="460" width="220" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc9" value="Practice 3D Interactive Flashcards&#xa;(Review / Mastered Tracking)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#064e3b;strokeColor=#10b981;fontColor=#a7f3d0;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="550" width="230" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="uc10" value="Persist Session to Cloud Firestore" style="ellipse;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#f59e0b;fontColor=#fde68a;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="360" y="600" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc11" value="Export PDF Study Guide / Markdown" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#22d3ee;fontColor=#67e8f9;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="670" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc12" value="Review Historical Sessions &amp; Trends" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#38bdf8;fontColor=#e2e8f0;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="770" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc13" value="Execute Diagnostic Audio/API Tests&#xa;(System Test Runner)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#64748b;fontColor=#cbd5e1;fontStyle=1;" vertex="1" parent="uc_boundary">
+          <mxGeometry x="70" y="850" width="230" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Includes / Extends -->
+        <mxCell id="rel1" value="&lt;&lt;include&gt;&gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#64748b;fontColor=#94a3b8;" edge="1" parent="uc_boundary" source="uc2" target="uc4">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel2" value="&lt;&lt;include&gt;&gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#64748b;fontColor=#94a3b8;" edge="1" parent="uc_boundary" source="uc3" target="uc4">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel3" value="&lt;&lt;include&gt;&gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#64748b;fontColor=#94a3b8;" edge="1" parent="uc_boundary" source="uc5" target="uc7">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel4" value="&lt;&lt;include&gt;&gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#64748b;fontColor=#94a3b8;" edge="1" parent="uc_boundary" source="uc7" target="uc8">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel5" value="&lt;&lt;include&gt;&gt;" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#64748b;fontColor=#94a3b8;" edge="1" parent="uc_boundary" source="uc5" target="uc10">
+          <mxGeometry width="160" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Primary Actor: Learner -->
+        <mxCell id="actor_user" value="Learner / Student" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontColor=#38bdf8;fontStyle=1;strokeColor=#38bdf8;fillColor=#0284c7;" vertex="1" parent="1">
+          <mxGeometry x="100" y="380" width="60" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Secondary Actor: Google Gemini AI -->
+        <mxCell id="actor_gemini" value="Google Gemini AI&#xa;• 3.1 Flash-Lite (Logic)&#xa;• 2.5 Flash (TTS)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontColor=#a855f7;fontStyle=1;strokeColor=#a855f7;fillColor=#9333ea;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="240" width="60" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Secondary Actor: Google Workspace Drive -->
+        <mxCell id="actor_drive" value="Google Drive /&#xa;Workspace OAuth" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontColor=#22d3ee;fontStyle=1;strokeColor=#22d3ee;fillColor=#06b6d4;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="440" width="60" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Secondary Actor: Firebase Firestore -->
+        <mxCell id="actor_firebase" value="Cloud Firestore &amp;&#xa;Firebase Auth" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontColor=#f59e0b;fontStyle=1;strokeColor=#f59e0b;fillColor=#d97706;" vertex="1" parent="1">
+          <mxGeometry x="1340" y="660" width="60" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Connect Actor to Use Cases -->
+        <mxCell id="e_u_1" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_2" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc2"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_3" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_5" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc5"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_6" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc6"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_9" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc9"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_11" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc11"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_12" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc12"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_u_13" style="strokeColor=#38bdf8;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc13"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Connect Secondary Actors -->
+        <mxCell id="e_g_4" style="strokeColor=#818cf8;strokeWidth=1.5;" edge="1" parent="1" source="uc4" target="actor_gemini"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_g_7" style="strokeColor=#818cf8;strokeWidth=1.5;" edge="1" parent="1" source="uc7" target="actor_gemini"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_g_8" style="strokeColor=#818cf8;strokeWidth=1.5;" edge="1" parent="1" source="uc8" target="actor_gemini"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_d_2" style="strokeColor=#22d3ee;strokeWidth=1.5;" edge="1" parent="1" source="uc2" target="actor_drive"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_f_1" style="strokeColor=#f59e0b;strokeWidth=1.5;" edge="1" parent="1" source="uc1" target="actor_firebase"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_f_10" style="strokeColor=#f59e0b;strokeWidth=1.5;" edge="1" parent="1" source="uc10" target="actor_firebase"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
