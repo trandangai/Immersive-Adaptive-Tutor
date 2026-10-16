@@ -664,38 +664,37 @@ app.get(['/terms', '/terms-of-service'], (_req, res) => {
   res.sendFile(path.resolve(process.cwd(), 'index.html'));
 });
 
-// Check if running in production mode (explicit NODE_ENV or Cloud Run environment)
-const isProduction = process.env.NODE_ENV === 'production' || !!process.env.K_SERVICE;
+// Locate compiled dist directory (handles running from project root or inside dist bundle)
+const distPath = fs.existsSync(path.resolve(__dirname, 'dist', 'index.html'))
+  ? path.resolve(__dirname, 'dist')
+  : (fs.existsSync(path.resolve(__dirname, 'index.html'))
+      ? __dirname
+      : path.resolve(process.cwd(), 'dist'));
+const hasDist = fs.existsSync(path.resolve(distPath, 'index.html'));
+const isProduction = process.env.NODE_ENV === 'production' && hasDist;
 
-// Respect PORT environment variable (Cloud Run passes PORT=8080), fallback to 3000 for AI Studio dev
-const PORT = parseInt(process.env.PORT || (isProduction ? '8080' : '3000'), 10);
+
+// Dev server runs on port 3000 as required by AI Studio runtime environment
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 async function startServer() {
   try {
-    const distDir = fs.existsSync(path.resolve(__dirname, 'dist'))
-      ? path.resolve(__dirname, 'dist')
-      : (fs.existsSync(path.resolve(__dirname, 'index.html')) ? __dirname : path.resolve(process.cwd(), 'dist'));
-
-    if (!isProduction) {
+    if (isProduction) {
+      app.use(express.static(distPath));
+      app.get('*', (_req, res) => {
+        res.sendFile(path.resolve(distPath, 'index.html'));
+      });
+    } else {
       const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: 'spa',
       });
       app.use(vite.middlewares);
-    } else {
-      app.use(express.static(distDir));
-      app.get('*', (_req, res) => {
-        const indexPath = path.resolve(distDir, 'index.html');
-        if (fs.existsSync(indexPath)) {
-          return res.sendFile(indexPath);
-        }
-        res.sendFile(path.resolve(process.cwd(), 'dist', 'index.html'));
-      });
     }
 
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Immersive Adaptive Tutor server listening on port ${PORT}`);
+      console.log(`Immersive Adaptive Tutor server listening on port ${PORT} (isProduction: ${isProduction})`);
     });
   } catch (err) {
     console.error('Failed to start server:', err);
