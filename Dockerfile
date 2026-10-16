@@ -8,9 +8,12 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Disable strict engine checks to prevent EBADENGINE warnings/failures
+ENV NPM_CONFIG_ENGINE_STRICT=false
+
+# Install build dependencies safely (npm install avoids lockfile sync failures)
 COPY package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps --no-audit
 
 # Copy project files
 COPY . .
@@ -20,7 +23,7 @@ RUN npm run build
 RUN npx esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js
 
 # Remove development dependencies to keep the image lightweight
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev --legacy-peer-deps
 
 # Stage 2: Production Runtime
 FROM node:22-slim AS runner

@@ -664,10 +664,11 @@ app.get(['/terms', '/terms-of-service'], (_req, res) => {
   res.sendFile(path.resolve(process.cwd(), 'index.html'));
 });
 
-// Port 3000 is strictly required by AI Studio dev environment; Cloud Run sets PORT in production
-const PORT = process.env.NODE_ENV === 'production'
-  ? parseInt(process.env.PORT || '8080', 10)
-  : 3000;
+// Check if running in production mode (explicit NODE_ENV or Cloud Run environment)
+const isProduction = process.env.NODE_ENV === 'production' || !!process.env.K_SERVICE;
+
+// Respect PORT environment variable (Cloud Run passes PORT=8080), fallback to 3000 for AI Studio dev
+const PORT = parseInt(process.env.PORT || (isProduction ? '8080' : '3000'), 10);
 
 async function startServer() {
   try {
@@ -675,7 +676,7 @@ async function startServer() {
       ? path.resolve(__dirname, 'dist')
       : (fs.existsSync(path.resolve(__dirname, 'index.html')) ? __dirname : path.resolve(process.cwd(), 'dist'));
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (!isProduction) {
       const { createServer: createViteServer } = await import('vite');
       const vite = await createViteServer({
         server: { middlewareMode: true },
