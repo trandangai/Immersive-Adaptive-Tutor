@@ -133,14 +133,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* Test Functions / Diagnostics Button */}
+          {/* Test Functions & Performance Benchmarks Button */}
           <button
             onClick={onOpenTestRunner}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-cyan-50 dark:bg-cyan-950/40 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/60 shadow-xs transition-all cursor-pointer"
-            title="Open Interactive System Test Functions & Diagnostics"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-50 dark:bg-cyan-950/40 text-cyan-800 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-700/60 hover:bg-cyan-100 dark:hover:bg-cyan-900/60 shadow-xs transition-all cursor-pointer"
+            title="Open Interactive Diagnostics & Performance Benchmark Report"
           >
             <FlaskConical className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-            <span className="hidden sm:inline">Tests</span>
+            <span className="hidden sm:inline">Tests & Benchmarks</span>
+            <span className="sm:hidden">Tests</span>
           </button>
 
           {/* Drive Status Badge */}
